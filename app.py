@@ -5,13 +5,7 @@ import sqlite3
 import atexit
 from datetime import datetime
 from functools import lru_cache
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Accept-Encoding': 'gzip, deflate, br',
-}
 
-response = requests.get(url, headers=headers)
 
 import requests
 import joblib
@@ -136,7 +130,13 @@ def check_price_alerts():
         finally:
             if conn:
                 conn.close()
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+}
 
+response = requests.get(url, headers=headers)
 # Start scheduler
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler.add_job(
