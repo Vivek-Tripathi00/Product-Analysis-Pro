@@ -142,143 +142,120 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     atexit.register(lambda: scheduler.shutdown())
 
 # Web Scraping Functions
+# Updated imports at the top
+import random
+from fake_useragent import UserAgent
+
+# Initialize UserAgent
+ua = UserAgent()
+
+# Updated get_page_content function
 def get_page_content(url, platform):
-    """Get HTML content of a page with retries."""
+    """Get HTML content with better headers and timeout handling."""
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "User-Agent": ua.random,  # Rotating user agents
         "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "Referer": "https://www.google.com/"
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Referer": "https://www.google.com/",
+        "DNT": "1"
     }
     
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(
-                url,
-                headers=headers,
-                timeout=10,
-                allow_redirects=True
-            )
-            response.raise_for_status()
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=(10, 30),  # Connect timeout 10s, read timeout 30s
+            proxies={
+                'http': os.getenv('PROXY'),
+                'https': os.getenv('PROXY')
+            } if os.getenv('PROXY') else None
+        )
+        response.raise_for_status()
+        
+        if "captcha" in response.text.lower():
+            raise Exception("CAPTCHA detected")
             
-            if platform == 'amazon' and "Sorry, we just need to make sure you're not a robot" in response.text:
-                raise Exception("Amazon bot detection triggered")
-                
-            return response.text
-        except requests.exceptions.RequestException as e:
-            app.logger.warning(f"Attempt {attempt + 1} failed: {str(e)}")
-            if attempt == max_retries - 1:
-                raise
-            time.sleep(2 ** attempt)
-    return None
+        return response.text
+    except Exception as e:
+        app.logger.error(f"Request failed: {str(e)}")
+        return None
 
+# Updated scrape_flipkart_reviews function
 def scrape_flipkart_reviews(url, num_reviews=50):
-    """Scrape product reviews from Flipkart with better error handling."""
+    """Scrape Flipkart reviews with current selectors."""
     reviews = []
     page = 1
-
+    
     while len(reviews) < num_reviews:
-        page_url = f"{url}&page={page}"
-        app.logger.info(f"Scraping: {page_url}")
-        
         try:
+            # Random delay to avoid detection
+            time.sleep(random.uniform(2, 5))
+            
+            page_url = f"{url}&page={page}"
+            app.logger.info(f"Scraping page {page}: {page_url}")
+            
             html_content = get_page_content(page_url, 'flipkart')
             if not html_content:
-                app.logger.warning("No HTML content received")
                 break
-
+                
             soup = BeautifulSoup(html_content, "html.parser")
             
-            # Try multiple possible review container classes
-            review_blocks = []
-            for class_name in ["cPHDOP col-12-12", "_1AtVbE col-12-12", "col _2wzgFH"]:
-                review_blocks = soup.find_all("div", class_=class_name)
-                if review_blocks:
-                    break
-
-            if not review_blocks:
-                app.logger.info("No reviews found on this page.")
+            # Updated review container selectors
+            review_containers = soup.select('div._1AtVbE, div.col._2wzgFH, div.cPHDOP')
+            if not review_containers:
+                app.logger.warning("No review containers found - may need updated selectors")
                 break
-
-            for review_block in review_blocks:
+                
+            for container in review_containers:
                 try:
-                    # Rating extraction with multiple possible selectors
-                    rating_tag = None
-                    for class_name in ["XQDdHH Ga3i8K", "_3LWZlK", "_2_R_DZ"]:
-                        rating_tag = review_block.find("div", class_=class_name)
-                        if rating_tag:
-                            break
+                    # Rating (try multiple selectors)
+                    rating_element = (container.find('div', class_='_3LWZlK') or 
+                                    container.find('span', class_='_2_R_DZ'))
+                    rating = int(float(rating_element.text)) if rating_element else 0
                     
-                    rating_text = rating_tag.get_text(strip=True) if rating_tag else "0"
-                    rating = int(float(re.search(r'\d+', rating_text).group())) if re.search(r'\d+', rating_text) else 0
-
-                    # Title extraction with multiple possible selectors
-                    title_tag = None
-                    for class_name in ["z9E0IG", "_2-N8zT", "qwjRop"]:
-                        title_tag = review_block.find("p", class_=class_name)
-                        if title_tag:
-                            break
-                    title = title_tag.get_text(strip=True) if title_tag else "No Title"
-
-                    # Review text extraction with multiple possible selectors
-                    review_text_tag = None
-                    for class_name in ["ZmyHeo", "t-ZTKy", ""]:  # Empty string for direct div
-                        if class_name:
-                            review_text_tag = review_block.find("div", class_=class_name)
-                        else:
-                            review_text_tag = review_block.find("div", recursive=False)
-                        if review_text_tag:
-                            break
-                    review_text = review_text_tag.get_text(strip=True) if review_text_tag else "No Review Text"
-
-                    # Reviewer name extraction
-                    name_tag = None
-                    for class_name in ["_2NsDsF AwS1CA", "_2sc7ZR", "_3L3u8V"]:
-                        name_tag = review_block.find("p", class_=class_name)
-                        if name_tag:
-                            break
-                    reviewer_name = name_tag.get_text(strip=True) if name_tag else "Anonymous"
-
-                    # Date and location extraction
-                    date_location = "Unknown"
-                    date_tag = None
-                    for class_name in ["_2mcZGG", "_3n8q9l"]:
-                        date_tag = review_block.find("p", class_=class_name)
-                        if date_tag:
-                            date_location = date_tag.get_text(strip=True)
-                            break
-
+                    # Title
+                    title_element = container.find('p', class_='_2-N8zT')
+                    title = title_element.text.strip() if title_element else "No Title"
+                    
+                    # Review text
+                    review_element = container.find('div', class_='t-ZTKy')
+                    review_text = review_element.text.strip() if review_element else "No Review"
+                    
+                    # Reviewer info
+                    reviewer_element = container.find('p', class_='_2sc7ZR')
+                    reviewer = reviewer_element.text.strip() if reviewer_element else "Anonymous"
+                    
+                    # Date
+                    date_element = container.find('p', class_='_2mcZGG')
+                    date = date_element.text.strip() if date_element else "Unknown Date"
+                    
                     reviews.append({
                         "Rating": rating,
                         "Title": title,
                         "Review": review_text,
-                        "Reviewer": reviewer_name,
-                        "Location": date_location,
-                        "Date": date_location,  # Flipkart often combines date and location
+                        "Reviewer": reviewer,
+                        "Date": date,
                         "Platform": "Flipkart"
                     })
-
+                    
                     if len(reviews) >= num_reviews:
                         break
-
+                        
                 except Exception as e:
-                    app.logger.error(f"Error extracting review (but continuing): {e}")
-                    continue  # Skip this review but continue with others
-
-            # Check if we've hit the last page
-            next_button = soup.find("a", class_="_1LKTO3")
-            if not next_button or "disabled" in next_button.get("class", []):
+                    app.logger.error(f"Error parsing review: {str(e)}")
+                    continue
+            
+            # Check for next page
+            next_button = soup.find('a', class_='_1LKTO3')
+            if not next_button or 'disabled' in next_button.get('class', []):
                 break
-
+                
             page += 1
-            time.sleep(2)  # Increased delay to be more polite
-
+            
         except Exception as e:
-            app.logger.error(f"Error scraping page (stopping): {e}")
+            app.logger.error(f"Error scraping page {page}: {str(e)}")
             break
-
+            
     return reviews
 def scrape_amazon_reviews(url, num_reviews=50):
     """Scrape product reviews from Amazon."""
