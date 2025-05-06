@@ -9,3 +9,5 @@ apscheduler
 pandas
 matplotlib
 joblib
+python-dotenv
+gunicorn
