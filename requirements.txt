@@ -11,3 +11,4 @@ matplotlib
 joblib
 python-dotenv
 gunicorn
+fake-useragent
