@@ -25,6 +25,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'fallback-secret-key-for-dev')
+url = "https://www.flipkart.com/motorola-g85-5g-olive-green-128-gb/product-reviews/itm897540eb01ff1?pid=MOBHY9PQMNCMDVCD&lid=LSTMOBHY9PQMNCMDVCDI6UUHQ&marketplace=FLIPKART&page=1"
 
 # Configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
