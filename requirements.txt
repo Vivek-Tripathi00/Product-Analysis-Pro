@@ -1,0 +1,11 @@
+flask
+requests
+beautifulsoup4
+nltk
+wordcloud
+scikit-learn
+flask-mail
+apscheduler
+pandas
+matplotlib
+joblib
