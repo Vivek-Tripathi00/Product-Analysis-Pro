@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Insight Pro | Advanced Review Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --dark: #1f2937;
+            --light: #f9fafb;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+        
+        .dark body {
+            background-color: #0f172a;
+            color: var(--light);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hello_input {
+    --tw-text-opacity: 1;
+    color: rgb(26, 22, 22);
+}
+element.style {
+    /* background-color: aqua; */
+    border: 1px solid black;
+}
+.text-indigo-600 {
+    --tw-text-opacity: 1;
+    color: rgba(79, 70, 229, var(--tw-text-opacity));
+    
+}
+        .dark .card {
+            background: #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .suspicious-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            color: white;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 0 12px 0 12px;
+            animation: pulse 2s infinite;
+        }
+        
+        .rating-stars {
+            display: inline-flex;
+            position: relative;
+        }
+        
+        .rating-stars .stars-background {
+            color: #e2e8f0;
+        }
+        
+        .rating-stars .stars-foreground {
+            position: absolute;
+            top: 0;
+            left: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            color: #fbbf24;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(67, 97, 238, 0.3);
+        }
+        
+        .sentiment-positive {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+        }
+        
+        .sentiment-negative {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+        }
+        
+        .sentiment-neutral {
+            background: rgba(156, 163, 175, 0.1);
+            border-left: 4px solid #9ca3af;
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.8; transform: scale(0.95); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 1023px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 50;
+                height: 100vh;
+                top: 0;
+                left: 0;
+            }
+            
+            .sidebar-open {
+                transform: translateX(0);
+            }
+        }
+        
+        .sidebar-overlay {
+            display: none;
+        }
+        
+        .sidebar-overlay-open {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+      
+    </style>
+</head>
+
+<body class="dark:bg-gray-900">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="lg:hidden fixed bottom-6 right-6 z-30">
+        <button id="mobile-menu-toggle" class="p-3 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-all">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar w-64 bg-white dark:bg-gray-800 shadow-lg fixed h-full z-50">
+        <div class="p-4 flex items-center justify-between border-b dark:border-gray-700">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-chart-pie text-indigo-600 dark:text-indigo-400 text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800 dark:text-white">Insight<span class="text-indigo-600 dark:text-indigo-400">Pro</span></h1>
+            </div>
+            <button id="sidebar-close" class="lg:hidden text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="p-4">
+            <div class="mb-6">
+                <div class="text-center mb-4">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-indigo-100 dark:bg-gray-700 flex items-center justify-center mb-2">
+                        <i class="fas fa-user text-indigo-600 dark:text-indigo-400 text-3xl"></i>
+                    </div>
+                    <h3 class="font-medium text-gray-800 dark:text-white">Welcome Back</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Premium Member</p>
+                </div>
+                
+                <div class="bg-indigo-50 dark:bg-gray-700 rounded-lg p-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-indigo-600 dark:text-indigo-300">Current Plan</p>
+                            <p class="font-medium text-gray-800 dark:text-white">Pro Analytics</p>
+                        </div>
+                        <button class="text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700 transition">Upgrade</button>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="space-y-1">
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg bg-indigo-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400">
+                    <i class="fas fa-home w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-search w-5"></i>
+                    <span>Product Analysis</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Trends</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-bell w-5"></i>
+                    <span>Alerts</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-bookmark w-5"></i>
+                    <span>Saved Products</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
+        
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t dark:border-gray-700">
+            <button id="theme-toggle" class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full">
+                <i class="fas fa-moon w-5"></i>
+                <span>Dark Mode</span>
+            </button>
+            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Navigation -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm">
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Product Analysis</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="relative hidden md:block">
+                        <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    
+                    <div class="relative">
+                        <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
+                            <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+                        </button>
+                    </div>
+                    
+                    <div class="relative">
+                        <button class="flex items-center space-x-2">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-gray-700 flex items-center justify-center">
+                                <i class="fas fa-user text-indigo-600 dark:text-indigo-400"></i>
+                            </div>
+                            <span class="hidden md:inline text-gray-700 dark:text-gray-300">User</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="p-6">
+            <!-- Search Section -->
+            <section class="mb-8">
+                <div class="card p-6 animate__animated animate__fadeIn">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Analyze Product Reviews</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">Enter a product URL to analyze customer sentiment, detect fake reviews, and gain valuable insights.</p>
+                    
+                    <form method="POST" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="md:col-span-3">
+                                <label for="product_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product URL</label>
+                                <div class="relative">
+                                    <input type="text" name="product_url" id="product_url" 
+                                        placeholder="https://www.amazon.com/... or https://www.flipkart.com/..."
+                                        class="w-full px-4 py-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                                    <i class="fas fa-link absolute left-3 top-4 text-gray-400"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="platform" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Platform</label>
+                                <select name="platform" id="platform" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                                    <option value="amazon">Amazon</option>
+                                    <option value="flipkart">Flipkart</option>
+                                    <option value="ebay">eBay</option>
+                                    <option value="walmart">Walmart</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <button type="submit" class="btn-primary px-6 py-3 text-white font-medium rounded-lg transition-all flex items-center">
+                                <i class="fas fa-search mr-2"></i> Analyze Product
+                            </button>
+                            <button type="button" class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center">
+                                <i class="fas fa-history mr-2"></i> Recent Analyses
+                            </button>
+                        </div>
+                    </form>
+                    
+                    {% if error %}
+                    <div class="mt-4 p-4 bg-red-50 dark:bg-red-900 dark:bg-opacity-20 border-l-4 border-red-500 text-red-700 dark:text-red-200 rounded-lg animate__animated animate__fadeIn">
+                        <p><i class="fas fa-exclamation-circle mr-2"></i> {{ error }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if success %}
+                    <div class="mt-4 p-4 bg-green-50 dark:bg-green-900 dark:bg-opacity-20 border-l-4 border-green-500 text-green-700 dark:text-green-200 rounded-lg animate__animated animate__fadeIn">
+                        <p><i class="fas fa-check-circle mr-2"></i> {{ success }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+ 
+            {% if sentiment_results %}
+            <!-- Results Dashboard -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Summary Cards -->
+                <div class="card p-6 hover:shadow-md transition-all">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Current Price</p>
+                            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                                {% if current_price %}
+                                ₹{{ "%.2f"|format(current_price) }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 dark:bg-opacity-30 text-blue-600 dark:text-blue-300">
+                            <i class="fas fa-tag text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                            <i class="fas fa-info-circle mr-1"></i> Last updated: Just now
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="card p-6 hover:shadow-md transition-all">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Total Reviews</p>
+                            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                                {{ sentiment_results.Positive + sentiment_results.Negative + sentiment_results.Neutral }}
+                            </h3>
+                        </div>
+                        <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 dark:bg-opacity-30 text-green-600 dark:text-green-300">
+                            <i class="fas fa-comments text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                            <i class="fas fa-chart-bar mr-1"></i> Analyzed in 3.2s
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="card p-6 hover:shadow-md transition-all">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Suspicious Reviews</p>
+                            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                                {{ fake_percentage }}%
+                            </h3>
+                        </div>
+                        <div class="p-3 rounded-full bg-amber-100 dark:bg-amber-900 dark:bg-opacity-30 text-amber-600 dark:text-amber-300">
+                            <i class="fas fa-exclamation-triangle text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                            <i class="fas fa-shield-alt mr-1"></i> Confidence: 92%
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="card p-6 hover:shadow-md transition-all">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Avg. Rating</p>
+                            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                                {% if avg_rating %}
+                                    {{ "%.1f"|format(avg_rating) }} ★
+                                    {% if avg_rating >= 4.0 %}
+                                        <span class="text-green-500">(Excellent)</span>
+                                    {% elif avg_rating >= 3.0 %}
+                                        <span class="text-yellow-500">(Good)</span>
+                                    {% else %}
+                                        <span class="text-red-500">(Poor)</span>
+                                    {% endif %}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h3>
+                        </div>
+                        <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 text-purple-600 dark:text-purple-300">
+                            <i class="fas fa-star text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                            <i class="fas fa-users mr-1"></i> Based on {{ reviews|length }} reviews
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Analysis Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Left Column -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Sentiment Analysis -->
+                    <div class="card p-6 animate__animated animate__fadeInUp">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white">Sentiment Analysis</h2>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 text-xs bg-indigo-100 dark:bg-indigo-900 dark:bg-opacity-30 text-indigo-600 dark:text-indigo-300 rounded-full">
+                                    <i class="fas fa-calendar-alt mr-1"></i> Last 30 days
+                                </button>
+                            </div>
+                        </div>
+                        <div class="h-80">
+                            <canvas id="sentimentChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Review Highlights -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Positive Highlight -->
+                        <div class="card p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 dark:bg-opacity-20 animate__animated animate__fadeInLeft">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-green-800 dark:text-green-200">
+                                    <i class="fas fa-thumbs-up mr-2"></i> Most Positive
+                                </h3>
+                                <span class="bg-green-100 dark:bg-green-800 dark:bg-opacity-30 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-medium">
+                                    {% set positive_reviews = reviews|selectattr('Sentiment', 'equalto', 'Positive')|list %}
+                                    {{ positive_reviews[0]['Rating'] if positive_reviews else '0' }}★
+                                </span>
+                            </div>
+                            <p class="text-sm text-green-700 dark:text-green-200 mb-3">
+                                {% if positive_reviews %}
+                                "{{ positive_reviews[0]['Review'][:120] }}{% if positive_reviews[0]['Review']|length > 120 %}...{% endif %}"
+                                {% else %}
+                                No positive reviews found
+                                {% endif %}
+                            </p>
+                            <div class="flex items-center justify-between text-xs text-green-600 dark:text-green-300">
+                                <span>{{ positive_reviews[0]['Reviewer'] if positive_reviews else 'Anonymous' }}</span>
+                                <span>{{ positive_reviews[0]['Date'] if positive_reviews else 'N/A' }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Negative Highlight -->
+                        <div class="card p-6 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 dark:bg-opacity-20 animate__animated animate__fadeInRight">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-red-800 dark:text-red-200">
+                                    <i class="fas fa-thumbs-down mr-2"></i> Most Negative
+                                </h3>
+                                <span class="bg-red-100 dark:bg-red-800 dark:bg-opacity-30 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">
+                                    {% set negative_reviews = reviews|selectattr('Sentiment', 'equalto', 'Negative')|list %}
+                                    {{ negative_reviews[0]['Rating'] if negative_reviews else '0' }}★
+                                </span>
+                            </div>
+                            <p class="text-sm text-red-700 dark:text-red-200 mb-3">
+                                {% if negative_reviews %}
+                                "{{ negative_reviews[0]['Review'][:120] }}{% if negative_reviews[0]['Review']|length > 120 %}...{% endif %}"
+                                {% else %}
+                                No negative reviews found
+                                {% endif %}
+                            </p>
+                            <div class="flex items-center justify-between text-xs text-red-600 dark:text-red-300">
+                                <span>{{ negative_reviews[0]['Reviewer'] if negative_reviews else 'Anonymous' }}</span>
+                                <span>{{ negative_reviews[0]['Date'] if negative_reviews else 'N/A' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Word Cloud -->
+                    <div class="card p-6 animate__animated animate__fadeInUp">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white">Review Keywords</h2>
+                            <button class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                                <i class="fas fa-sliders-h mr-1"></i> Adjust
+                            </button>
+                        </div>
+                        <div class="flex justify-center bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            {% if wordcloud_path %}
+                            <img src="{{ wordcloud_path }}" alt="Word Cloud" class="rounded-lg max-w-full h-auto shadow-sm">
+                            {% else %}
+                            <p class="text-gray-500 dark:text-gray-400">No word cloud available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <!-- Rating Distribution -->
+                    <div class="card p-6 animate__animated animate__fadeIn">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white">Rating Distribution</h2>
+                            <button class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Suspicious Reviews -->
+                    <div class="card p-6 animate__animated animate__fadeIn">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white">Suspicious Activity</h2>
+                            <span class="px-3 py-1 text-xs bg-amber-100 dark:bg-amber-900 dark:bg-opacity-30 text-amber-800 dark:text-amber-200 rounded-full">
+                                {{ fake_percentage }}% detected
+                            </span>
+                        </div>
+                        <div class="space-y-4">
+                            {% for review in reviews if review.get('IsSuspicious') %}
+                            {% if loop.index <= 3 %}
+                            <div class="p-3 bg-amber-50 dark:bg-amber-900 dark:bg-opacity-20 rounded-lg border-l-4 border-amber-500">
+                                <div class="flex justify-between items-start">
+                                    <p class="text-sm text-amber-800 dark:text-amber-200">
+                                        "{{ review.Review[:80] }}{% if review.Review|length > 80 %}...{% endif %}"
+                                    </p>
+                                    <span class="text-xs bg-amber-100 dark:bg-amber-800 dark:bg-opacity-30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded">
+                                        {{ review.Rating }}★
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center mt-2 text-xs text-amber-600 dark:text-amber-300">
+                                    <span>{{ review.Reviewer }}</span>
+                                    <span>{{ review.Date }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if not reviews|selectattr('IsSuspicious')|list %}
+                            <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-check-circle text-2xl mb-2 text-green-500"></i>
+                                <p>No suspicious reviews detected</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Price Tracking -->
+                    <div class="card p-6 animate__animated animate__fadeIn">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white">Price Tracking</h2>
+                            <i class="fas fa-line-chart text-indigo-500"></i>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                            Track price history and get notified when the price drops.
+                        </p>
+                        <div class="bg-indigo-50 dark:bg-indigo-900 dark:bg-opacity-20 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="text-xs text-indigo-600 dark:text-indigo-300">Current Price</p>
+                                    <p class="font-medium text-gray-800 dark:text-white">
+                                        {% if current_price %}
+                                        ₹{{ "%.2f"|format(current_price) }}
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-indigo-600 dark:text-indigo-300">30-day Avg.</p>
+                                    <p class="font-medium text-gray-800 dark:text-white">
+                                        {% if current_price %}
+                                        ₹{{ "%.2f"|format(current_price * 0.95) }}
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <button id="track-price-btn" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center justify-center">
+                                <i class="fas fa-bell mr-2"></i> Set Price Alert
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Price Alert Form -->
+<div class="card p-6 animate__animated animate__fadeIn">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Price Tracking</h2>
+        <i class="fas fa-line-chart text-indigo-500"></i>
+    </div>
+    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+        Track price history and get notified when the price drops.
+    </p>
+    <div class="bg-indigo-50 dark:bg-indigo-900 dark:bg-opacity-20 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+            <div>
+                <p class="text-xs text-indigo-600 dark:text-indigo-300">Current Price</p>
+                <p class="font-medium text-gray-800 dark:text-white">
+                    {% if current_price %}
+                    ₹{{ "%.2f"|format(current_price) }}
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('set_price_alert') }}">
+            <input type="hidden" name="set_alert" value="1">
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Email</label>
+                <input type="email" name="email" required 
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+            </div>
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Price (₹)</label>
+                <input type="number" step="0.01" name="target_price" required 
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+            </div>
+            <button type="submit" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center justify-center">
+                <i class="fas fa-bell mr-2"></i> Set Price Alert
+            </button>
+        </form>
+    </div>
+</div>
+
+            <!-- All Reviews Section -->
+            <div class="card p-6 animate__animated animate__fadeIn">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">Customer Reviews</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="filter-all" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">
+                            All ({{ reviews|length }})
+                        </button>
+                        <button id="filter-positive" class="px-4 py-2 bg-green-100 dark:bg-green-900 dark:bg-opacity-20 text-green-800 dark:text-green-200 rounded-lg text-sm">
+                            Positive ({{ sentiment_results.Positive }})
+                        </button>
+                        <button id="filter-negative" class="px-4 py-2 bg-red-100 dark:bg-red-900 dark:bg-opacity-20 text-red-800 dark:text-red-200 rounded-lg text-sm">
+                            Negative ({{ sentiment_results.Negative }})
+                        </button>
+                        <button id="filter-suspicious" class="px-4 py-2 bg-amber-100 dark:bg-amber-900 dark:bg-opacity-20 text-amber-800 dark:text-amber-200 rounded-lg text-sm">
+                            Suspicious ({{ reviews|selectattr('IsSuspicious')|list|length }})
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-4" id="reviews-container">
+                    {% for review in reviews %}
+                    <div class="review-card p-5 rounded-lg border dark:border-gray-700 {% if review.Sentiment == 'Positive' %}sentiment-positive{% elif review.Sentiment == 'Negative' %}sentiment-negative{% else %}sentiment-neutral{% endif %} {% if review.get('IsSuspicious') %}suspicious-review{% endif %}"
+                        data-sentiment="{{ review.Sentiment }}" data-suspicious="{{ 'true' if review.get('IsSuspicious') else 'false' }}">
+                        {% if review.get('IsSuspicious') %}
+                        <div class="suspicious-badge">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Suspicious
+                        </div>
+                        {% endif %}
+                        
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-gray-800 dark:text-white">{{ review.Title }}</h3>
+                                <div class="mt-1 mb-2">
+                                    <div class="rating-stars">
+                                        <div class="stars-background">
+                                            {% for i in range(5) %}
+                                            <i class="fas fa-star"></i>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="stars-foreground" style="width: {{ (review.Rating / 5) * 100 }}%">
+                                            {% for i in range(5) %}
+                                            <i class="fas fa-star"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">{{ review.Review }}</p>
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-4">{{ review.Date }}</span>
+                        </div>
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">By {{ review.Reviewer }}</span>
+                            <span class="text-xs px-3 py-1 rounded-full 
+                                {% if review.Sentiment == 'Positive' %}bg-green-100 dark:bg-green-900 dark:bg-opacity-30 text-green-800 dark:text-green-200
+                                {% elif review.Sentiment == 'Negative' %}bg-red-100 dark:bg-red-900 dark:bg-opacity-30 text-red-800 dark:text-red-200
+                                {% else %}bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200{% endif %}">
+                                {{ review.Sentiment }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6 flex justify-center">
+                    <button class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        Load More Reviews
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Newsletter Section -->
+            <div class="mt-12 card p-8 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl animate__animated animate__fadeIn">
+                <div class="max-w-2xl mx-auto text-center">
+                    <i class="fas fa-envelope-open-text text-4xl mb-4 animate-float"></i>
+                    <h2 class="text-2xl font-bold mb-2 hello_input">Stay Updated with Product Insights</h2>
+                    <p class="mb-6 opacity-90 hello_input">Subscribe to our newsletter for the latest trends, analysis tools, and shopping tips.</p>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="mb-4 px-4 py-2 rounded bg-white bg-opacity-20 
+                                {% if category == 'success' %}text-green-100
+                                {% else %}text-red-100{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                    
+                    <form action="/subscribe" method="POST" class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+                        <input type="email" name="email" placeholder="Enter your email" required
+                            class="flex-grow px-4 py-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-white hello_input">
+                        <button type="submit"
+                            class="px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition whitespace-nowrap hello_input">
+                            Subscribe Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+            <div class="container mx-auto px-6 py-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i class="fas fa-chart-pie text-indigo-600 dark:text-indigo-400 text-2xl"></i>
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white">Insight<span class="text-indigo-600 dark:text-indigo-400">Pro</span></h3>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm">
+                            Advanced product analysis tools to help you make smarter purchasing decisions.
+                        </p>
+                        <div class="flex space-x-4 mt-4">
+                            <a href="#" class="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="#" class="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" class="text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                <i class="fab fa-github"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Product</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Features</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Pricing</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">API</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Integrations</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Resources</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Documentation</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Guides</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Blog</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Support</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Company</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">About</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Careers</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Privacy</a></li>
+                            <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm">Terms</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-t dark:border-gray-700 mt-8 pt-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    <p>© 2025 Product Insight Pro. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile sidebar toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarClose = document.getElementById('sidebar-close');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.add('sidebar-open');
+            sidebarOverlay.classList.add('sidebar-overlay-open');
+        });
+        
+        sidebarClose.addEventListener('click', () => {
+            sidebar.classList.remove('sidebar-open');
+            sidebarOverlay.classList.remove('sidebar-overlay-open');
+        });
+        
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('sidebar-open');
+            sidebarOverlay.classList.remove('sidebar-overlay-open');
+        });
+        
+        // Dark mode toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            if (html.classList.contains('dark')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun w-5"></i><span>Light Mode</span>';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon w-5"></i><span>Dark Mode</span>';
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        
+        // Check for saved theme preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            themeToggle.innerHTML = '<i class="fas fa-sun w-5"></i><span>Light Mode</span>';
+        } else {
+            html.classList.remove('dark');
+            themeToggle.innerHTML = '<i class="fas fa-moon w-5"></i><span>Dark Mode</span>';
+        }
+        
+        // Review filtering
+        const filterAll = document.getElementById('filter-all');
+        const filterPositive = document.getElementById('filter-positive');
+        const filterNegative = document.getElementById('filter-negative');
+        const filterSuspicious = document.getElementById('filter-suspicious');
+        const reviewCards = document.querySelectorAll('.review-card');
+        
+        filterAll.addEventListener('click', () => {
+            reviewCards.forEach(card => {
+                card.style.display = 'block';
+            });
+        });
+        
+        filterPositive.addEventListener('click', () => {
+            reviewCards.forEach(card => {
+                card.style.display = card.dataset.sentiment === 'Positive' ? 'block' : 'none';
+            });
+        });
+        
+        filterNegative.addEventListener('click', () => {
+            reviewCards.forEach(card => {
+                card.style.display = card.dataset.sentiment === 'Negative' ? 'block' : 'none';
+            });
+        });
+        
+        filterSuspicious.addEventListener('click', () => {
+            reviewCards.forEach(card => {
+                card.style.display = card.dataset.suspicious === 'true' ? 'block' : 'none';
+            });
+        });
+        
+        // Initialize charts if results exist
+        {% if sentiment_results %}
+        // Sentiment Chart
+        const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+        const sentimentChart = new Chart(sentimentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Positive', 'Negative', 'Neutral'],
+                datasets: [{
+                    data: [
+                        {{ sentiment_results.Positive }},
+                        {{ sentiment_results.Negative }},
+                        {{ sentiment_results.Neutral }}
+                    ],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(156, 163, 175, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(156, 163, 175, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#6B7280',
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const value = context.raw;
+                                const percentage = Math.round((value / total) * 100);
+                                return `${context.label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '70%',
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
+                }
+            }
+        });
+        
+        // Rating Chart
+        const ratingCtx = document.getElementById('ratingChart').getContext('2d');
+        
+        // Calculate rating distribution
+        const ratingCounts = [0, 0, 0, 0, 0];
+        {% for review in reviews %}
+        ratingCounts[{{ review.Rating }} - 1]++;
+        {% endfor %}
+        
+        const ratingChart = new Chart(ratingCtx, {
+            type: 'bar',
+            data: {
+                labels: ['1★', '2★', '3★', '4★', '5★'],
+                datasets: [{
+                    label: 'Number of Reviews',
+                    data: ratingCounts,
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.7)',
+                        'rgba(251, 191, 36, 0.7)',
+                        'rgba(252, 211, 77, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(59, 130, 246, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(252, 211, 77, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(59, 130, 246, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            color: '#6B7280'
+                        },
+                        grid: {
+                            color: 'rgba(209, 213, 219, 0.3)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#6B7280'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                animation: {
+                    duration: 1000
+                }
+            }
+        });
+        
+        // Price tracking button
+        document.getElementById('track-price-btn').addEventListener('click', () => {
+            // Create a modal for price alert
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full animate__animated animate__fadeInUp">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">Set Price Alert</h3>
+                        <button class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" id="close-modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Price</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500">₹</span>
+                            <input type="number" placeholder="Enter target price" 
+                                class="w-full pl-8 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white">
+                        </div>
+                    </div>
+                    <button class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+                        Set Alert
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal
+            modal.querySelector('#close-modal').addEventListener('click', () => {
+                modal.classList.add('animate__fadeOut');
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                }, 300);
+            });
+        });
+        {% endif %}
+        
+        // Add animation classes as elements come into view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        document.querySelectorAll('.card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+
+</html>

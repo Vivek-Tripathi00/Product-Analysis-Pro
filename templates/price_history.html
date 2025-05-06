@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price History - Product Insight Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h1 class="text-2xl font-bold mb-6">Price History</h1>
+            
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-2">{{ product_name }}</h2>
+                <p class="text-gray-600">Tracked since {{ tracking_start_date }}</p>
+            </div>
+            
+            <div class="h-96 mb-8">
+                <canvas id="priceChart"></canvas>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-600">Current Price</p>
+                    <p class="text-2xl font-bold text-blue-800">₹{{ current_price }}</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-green-600">Lowest Price</p>
+                    <p class="text-2xl font-bold text-green-800">₹{{ lowest_price }}</p>
+                    <p class="text-xs text-green-600 mt-1">on {{ lowest_price_date }}</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <p class="text-sm text-red-600">Highest Price</p>
+                    <p class="text-2xl font-bold text-red-800">₹{{ highest_price }}</p>
+                    <p class="text-xs text-red-600 mt-1">on {{ highest_price_date }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        const priceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ price_dates|safe }},
+                datasets: [{
+                    label: 'Price (₹)',
+                    data: {{ price_values|safe }},
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '₹' + context.raw.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
